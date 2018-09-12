@@ -39,8 +39,8 @@
         };
 
     function inputActive(currentElement) {
-        // If on an input
-        if (currentElement.nodeName === "INPUT" || currentElement.getAttribute("role") === "textbox") {
+        // If on an input or textarea
+        if (currentElement.tagName.toLowerCase() === "input" || currentElement.tagName.toLowerCase() === "textarea") {
             return true;
         } else {
             return false;
@@ -49,9 +49,9 @@
 
     // https://stackoverflow.com/questions/6121203/how-to-do-fade-in-and-fade-out-with-javascript-and-css
     function fadeout(element, startOpacity) {
-        var op = startOpacity;  // initial opacity
+        var op = startOpacity; // initial opacity
         var timer = setInterval(function () {
-            if (op <= 0.1){
+            if (op <= 0.1) {
                 clearInterval(timer);
                 element.style.display = 'none';
             }
@@ -74,11 +74,11 @@
         } else {
             element.innerHTML = speed + "x";
         }
-        
+
         element.style.display = 'block';
         element.style.opacity = 0.8;
         element.style.filter = 'alpha(opacity=' + (0.8 * 100) + ")"
-        setTimeout(function() {
+        setTimeout(function () {
             fadeout(element, 0.8);
         }, 1500);
 
@@ -93,6 +93,7 @@
             activeElement = document.activeElement,
             i;
 
+        // If an input/textarea element is active, don't go any further 
         if (inputActive(activeElement)) {
             return;
         }
@@ -129,52 +130,11 @@
             return;
         }
 
-
-        if (code === KEYCODES.SPACEBAR) {
-            if (video.paused) {
-                video.play();
-            } else {
-                video.pause();
-            }
-        }
-
-        if (code === KEYCODES.LEFT) {
-            video.currentTime = video.currentTime - 5;
-        }
-
-        if (code === KEYCODES.UP) {
-            video.volume = ((video.volume + 0.1) > 1) ? 1 : (video.volume + 0.1);
-        }
-
-        if (code === KEYCODES.RIGHT) {
-            video.currentTime = video.currentTime + 5;
-        }
-
-        if (code === KEYCODES.DOWN) {
-            video.volume = ((video.volume - 0.1) < 0) ? 0 : (video.volume - 0.1);
-        }
-
         // If seek key
         if (SEEK_JUMP_KEYCODE_MAPPINGS[code] !== undefined) {
             video.currentTime = (SEEK_JUMP_KEYCODE_MAPPINGS[code] / 10) * video.duration;
         }
 
-    };
-
-    // Prevent defaults
-    window.onkeydown = function (e) {
-        var code = e.keyCode,
-            activeElement = document.activeElement;
-
-        // Prevent spacebar jumping around the page
-        if (code === KEYCODES.SPACEBAR || code === KEYCODES.LEFT || code === KEYCODES.UP || code === KEYCODES.RIGHT || code === KEYCODES.DOWN) {
-
-            // Make sure it's not an input element
-            if (!inputActive(activeElement)) {
-                e.preventDefault();
-            }
-
-        }
     };
 
 }());
