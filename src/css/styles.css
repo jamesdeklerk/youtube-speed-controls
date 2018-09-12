@@ -1,0 +1,22 @@
+#youtube-extension-text-box {
+    position: absolute;
+
+    margin: auto;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    height: 60px;
+
+    text-align: center;
+    vertical-align: middle;
+
+    border-radius: 20px;
+    padding: 30px;
+    font-size: 50px;
+    background-color: #000;
+    color: #f3f3f3;
+    z-index: 99999999999999999;
+    opacity: 0.8;;
+}
