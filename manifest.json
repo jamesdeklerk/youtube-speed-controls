@@ -3,7 +3,7 @@
 
     "name": "YouTube Speed Controls",
     "description": "Click ` (the grave accent key) to flick between normal and 2x speed, or ctrl + ` to play at 3x speed.",
-    "version": "1.0",
+    "version": "1.1",
     
     "content_scripts": [
         {
