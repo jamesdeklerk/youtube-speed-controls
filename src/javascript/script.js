@@ -40,7 +40,9 @@
 
     function inputActive(currentElement) {
         // If on an input or textarea
-        if (currentElement.tagName.toLowerCase() === "input" || currentElement.tagName.toLowerCase() === "textarea") {
+        if (currentElement.tagName.toLowerCase() === "input" ||
+            currentElement.tagName.toLowerCase() === "textarea" ||
+            currentElement.isContentEditable) {
             return true;
         } else {
             return false;
