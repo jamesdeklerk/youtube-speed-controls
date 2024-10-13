@@ -11,7 +11,9 @@
             "UP": 38,
             "RIGHT": 39,
             "DOWN": 40,
-            "SPEEDUP": 192
+            "SPEEDUP": 192,  // Backquote
+            "SKIP_FORWARD": 74,  // J
+            "SKIP_BACKWARD": 76  // L
         },
         SEEK_JUMP_KEYCODE_MAPPINGS = {
             // 0 to 9
@@ -94,6 +96,7 @@
             mediaElementChildren = mediaElement.getElementsByTagName("*"),
             activeElement = document.activeElement,
             i;
+      const seconds = 1;
 
         // If an input/textarea element is active, don't go any further 
         if (inputActive(activeElement)) {
@@ -117,6 +120,13 @@
             }
 
             displayText(video.playbackRate, mediaElement);
+        }
+
+        if (code === KEYCODES.SKIP_FORWARD && ctrlKey) {
+            video.currentTime = (video.currentTime + seconds)
+        }
+        if (code === KEYCODES.SKIP_BACKWARD && ctrlKey) {
+            video.currentTime = (video.currentTime - seconds)
         }
 
         // Check if the media element, or any of it's children are active.
