@@ -12,3 +12,4 @@ Flick between normal (1x), 2x and 3x playback speed.
 ## Usage:
 - Click <code>&#96;</code> (the grave accent key) to flick between normal and 2x playback speed
 - Click <code>ctrl + &#96;</code> to flick between normal and 3x playback speed.
+- Click <code>ctrl + &#74;</code> and <code>ctrl + &#76;</code> to skip backwards and forwards in 1 second increment.
