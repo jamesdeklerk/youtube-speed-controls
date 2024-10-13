@@ -12,8 +12,8 @@
             "RIGHT": 39,
             "DOWN": 40,
             "SPEEDUP": 192,  // Backquote
-            "SKIP_FORWARD": 74,  // J
-            "SKIP_BACKWARD": 76  // L
+            "SKIP_BACKWARD": 74,  // J
+            "SKIP_FORWARD": 76  // L
         },
         SEEK_JUMP_KEYCODE_MAPPINGS = {
             // 0 to 9
