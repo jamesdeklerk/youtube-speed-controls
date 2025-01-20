@@ -2,13 +2,25 @@
 
 **YouTube Speed Controls is a Google Chrome Extension which can be found [here](https://chrome.google.com/webstore/detail/youtube-speed-controls/naalfmaaomhjpbndelnlijacdniggpjn).**
 
-## Overview
+## Usage
 
-Click <code>&#96;</code> (the grave accent key) to flick between normal and 2x speed, or <code>ctrl + &#96;</code> to play at 3x speed.
-Control the speed of YouTube videos using the <code>&#96;</code> key.
+Control the speed of YouTube videos using the <code>&#96;</code> (backtick) or <code>&#39;</code> (apostrophe) keys. Click <code>&#96;</code> or <code>&#39;</code> to toggle between normal (1x) and 2x speed. Increase the speed to 3x, 4x, or 5x by using the corresponding shortcut combination (see below).
 
-Flick between normal (1x), 2x and 3x playback speed.
+### Notes
 
-## Usage:
-- Click <code>&#96;</code> (the grave accent key) to flick between normal and 2x playback speed
-- Click <code>ctrl + &#96;</code> to flick between normal and 3x playback speed.
+- After initial install, you may need to reload YouTube pages that were open (only after initial install).
+- The <code>&#39;</code> (apostrophe) and <code>&#96;</code> (backtick) keys can be used interchangeably for any of the shortcuts.
+
+### Windows Usage
+
+- **1x/2x Toggle:** Press <code>&#96;</code>
+- **3x Speed:** Press Ctrl + <code>&#96;</code>
+- **4x Speed:** Press Windows + <code>&#96;</code>
+- **5x Speed:** Press Alt + <code>&#96;</code>
+
+### Mac Usage
+
+- **1x/2x Toggle:** Press <code>&#96;</code>
+- **3x Speed:** Press Control + <code>&#96;</code>
+- **4x Speed:** Press Command + <code>&#96;</code>
+- **5x Speed:** Press Option + <code>&#96;</code>
