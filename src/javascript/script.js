@@ -4,39 +4,36 @@
 
     "use strict";
 
-    var speedup = false,
-        KEYCODES = {
-            "SPACEBAR": 32,
-            "LEFT": 37,
-            "UP": 38,
-            "RIGHT": 39,
-            "DOWN": 40,
-            "SPEEDUP": 192
-        },
-        SEEK_JUMP_KEYCODE_MAPPINGS = {
-            // 0 to 9
-            "48": 0,
-            "49": 1,
-            "50": 2,
-            "51": 3,
-            "52": 4,
-            "53": 5,
-            "54": 6,
-            "55": 7,
-            "56": 8,
-            "57": 9,
-            // 0 to 9 on numpad
-            "96": 0,
-            "97": 1,
-            "98": 2,
-            "99": 3,
-            "100": 4,
-            "101": 5,
-            "102": 6,
-            "103": 7,
-            "104": 8,
-            "105": 9
-        };
+    // Key values for keyboard events
+    // https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
+    const KEYS = {
+        BACKTICK: "`", // Also called backquote or grave accent
+        QUOTE: "'" // Also called apostrophe
+    };
+
+    // https://developer.mozilla.org/en-US/docs/Web/API/Element/keyup_event
+    window.addEventListener("keyup", function (event) {
+        // If an input/textarea element is active, don't go any further, or if it's not a speedup shortcut
+        if (inputActive(document.activeElement) || !isToggleSpeedShortcut(event))
+            return;
+
+        let video = document.getElementsByTagName("video")[0];
+        if (!video)
+            return;
+
+        if (isOnlyToggleSpeedShortcut(event)) {
+            // If it's sped up, go back to normal speed, else go to 2x speed
+            video.playbackRate = isVideoSpedUp(video) ? 1 : 2;
+        } else if (is3xSpeedShortcut(event)) {
+            video.playbackRate = 3;
+        } else if (is4xSpeedShortcut(event)) {
+            video.playbackRate = 4;
+        } else if (is5xSpeedShortcut(event)) {
+            video.playbackRate = 5;
+        }
+
+        displayTextInMediaElement(video.playbackRate);
+    });
 
     function inputActive(currentElement) {
         // If on an input or textarea
@@ -63,15 +60,15 @@
         }, 50);
     }
 
-    function displayText(speed, boundingElement) {
-        var elementId = "youtube-extension-text-box",
-            HTML = '<div id="' + elementId + '">' + speed + 'x</div>',
-            element = document.getElementById(elementId);
+    function displayTextInMediaElement(speed) {
+        let elementId = "youtube-extension-text-box";
+        let element = document.getElementById(elementId);
 
         // If the element doesn't exist, append it to the body
         // must check if it already exists
         if (!element) {
-            boundingElement.insertAdjacentHTML('afterbegin', HTML);
+            let mediaElement = document.getElementById("movie_player");
+            mediaElement.insertAdjacentHTML('afterbegin', `<div id="${elementId}">${speed}x</div>`);
             element = document.getElementById(elementId);
         } else {
             element.innerHTML = speed + "x";
@@ -83,60 +80,34 @@
         setTimeout(function () {
             fadeout(element, 0.8);
         }, 1500);
-
     }
 
-    window.onkeyup = function (e) {
-        var code = e.keyCode,
-            ctrlKey = e.ctrlKey,
-            video = document.getElementsByTagName("video")[0],
-            mediaElement = document.getElementById("movie_player"),
-            mediaElementChildren = mediaElement.getElementsByTagName("*"),
-            activeElement = document.activeElement,
-            i;
+    const isVideoSpedUp = (video) => video.playbackRate !== 1;
 
-        // If an input/textarea element is active, don't go any further 
-        if (inputActive(activeElement)) {
-            return;
-        }
+    // ` or ' is for toggling between speedup and normal speed
+    const isToggleSpeedShortcut = (e) =>
+        e.key === KEYS.BACKTICK || e.key === KEYS.QUOTE;
 
-        // Playback speeds
-        if (code === KEYCODES.SPEEDUP) {
-            speedup = !speedup;
+    // ` or ' for toggling between speedup and normal speed
+    const isOnlyToggleSpeedShortcut = (e) =>
+        isToggleSpeedShortcut(e)
+        && !e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey;
 
-            if (speedup) {
-                video.playbackRate = 2;
-            } else {
-                video.playbackRate = 1;
-            }
+    // Ctrl + ` or Ctrl + ' for 3x speed
+    const is3xSpeedShortcut = (e) =>
+        isToggleSpeedShortcut(e) && e.ctrlKey
+        && !e.shiftKey && !e.altKey && !e.metaKey;
 
-            // If ctrl is being pressed turn to x3 speed
-            if (ctrlKey) {
-                video.playbackRate = 3;
-                speedup = true;
-            }
+    // Windows + ` or Windows + ' for 4x speed (Windows key is the meta key on Windows)
+    // Command + ` or Command + ' for 4x speed (Command key is the meta key on Mac)
+    const is4xSpeedShortcut = (e) =>
+        isToggleSpeedShortcut(e) && e.metaKey
+        && !e.ctrlKey && !e.shiftKey && !e.altKey;
 
-            displayText(video.playbackRate, mediaElement);
-        }
-
-        // Check if the media element, or any of it's children are active.
-        // Else we'll be overwriting the previous actions.
-        for (i = 0; i < mediaElementChildren.length; i = i + 1) {
-            if (mediaElementChildren[i] === activeElement) {
-                return;
-            }
-        }
-
-        // Also check if it's the media element itself.
-        if (mediaElement === activeElement) {
-            return;
-        }
-
-        // If seek key
-        if (SEEK_JUMP_KEYCODE_MAPPINGS[code] !== undefined) {
-            video.currentTime = (SEEK_JUMP_KEYCODE_MAPPINGS[code] / 10) * video.duration;
-        }
-
-    };
+    // Alt + ` or Alt + ' for 5x speed (on Windows)
+    // Option + ` or Option + ' for 5x speed (on Mac)
+    const is5xSpeedShortcut = (e) =>
+        isToggleSpeedShortcut(e) && e.altKey
+        && !e.ctrlKey && !e.shiftKey && !e.metaKey;
 
 }());
