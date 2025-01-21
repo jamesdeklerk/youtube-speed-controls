@@ -14,13 +14,13 @@ Control the speed of YouTube videos using the <code>&#96;</code> (backtick) or <
 ### Windows Usage
 
 - **1x/2x Toggle:** Press <code>&#96;</code>
-- **3x Speed:** Press Ctrl + <code>&#96;</code>
-- **4x Speed:** Press Windows + <code>&#96;</code>
-- **5x Speed:** Press Alt + <code>&#96;</code>
+- **3x Speed:** Press <code>Ctrl + &#96;</code>
+- **4x Speed:** Press <code>Windows + &#96;</code>
+- **5x Speed:** Press <code>Alt + &#96;</code>
 
 ### Mac Usage
 
 - **1x/2x Toggle:** Press <code>&#96;</code>
-- **3x Speed:** Press Control + <code>&#96;</code>
-- **4x Speed:** Press Command + <code>&#96;</code>
-- **5x Speed:** Press Option + <code>&#96;</code>
+- **3x Speed:** Press <code>Control + &#96;</code>
+- **4x Speed:** Press <code>Command + &#96;</code>
+- **5x Speed:** Press <code>Option + &#96;</code>
