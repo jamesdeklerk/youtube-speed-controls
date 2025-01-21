@@ -1,5 +1,3 @@
-/*global console */
-
 (function () {
 
     "use strict";
@@ -10,6 +8,8 @@
         BACKTICK: "`", // Also called backquote or grave accent
         QUOTE: "'" // Also called apostrophe
     };
+
+    let activeAnimationId = null; // Store the current animation ID
 
     // https://developer.mozilla.org/en-US/docs/Web/API/Element/keyup_event
     window.addEventListener("keyup", function (event) {
@@ -35,29 +35,39 @@
         displayTextInMediaElement(video.playbackRate);
     });
 
-    function inputActive(currentElement) {
+    const inputActive = (currentElement) =>
         // If on an input or textarea
-        if (currentElement.tagName.toLowerCase() === "input" ||
-            currentElement.tagName.toLowerCase() === "textarea" ||
-            currentElement.isContentEditable) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+        currentElement.tagName.toLowerCase() === "input" ||
+        currentElement.tagName.toLowerCase() === "textarea" ||
+        currentElement.isContentEditable;
 
-    // https://stackoverflow.com/questions/6121203/how-to-do-fade-in-and-fade-out-with-javascript-and-css
-    function fadeout(element, startOpacity) {
-        var op = startOpacity; // initial opacity
-        var timer = setInterval(function () {
-            if (op <= 0.1) {
-                clearInterval(timer);
+    function startFadeoutAnimation(element, startOpacity = 0.9, duration = 1000) {
+        let opacity = startOpacity;
+        const startTime = performance.now();
+
+        // If an animation is already in progress, cancel it
+        if (activeAnimationId) {
+            cancelAnimationFrame(activeAnimationId);
+        }
+
+        const fadeStep = function (timestamp) {
+            const elapsed = timestamp - startTime;
+            const progress = Math.min(elapsed / duration, 1); // Ensure progress does not exceed 1
+
+            // Set the opacity based on the progress
+            opacity = startOpacity * (1 - progress);
+            element.style.opacity = opacity;
+            element.style.filter = `alpha(opacity=${opacity * 100})`;
+
+            if (progress < 1) {
+                activeAnimationId = requestAnimationFrame(fadeStep);
+            } else {
                 element.style.display = 'none';
+                activeAnimationId = null; // Clear the animation ID when done
             }
-            element.style.opacity = op;
-            element.style.filter = 'alpha(opacity=' + op * 100 + ")";
-            op -= op * 0.1;
-        }, 50);
+        };
+
+        activeAnimationId = requestAnimationFrame(fadeStep);
     }
 
     function displayTextInMediaElement(speed) {
@@ -76,10 +86,9 @@
 
         element.style.display = 'block';
         element.style.opacity = 0.8;
-        element.style.filter = 'alpha(opacity=' + (0.8 * 100) + ")"
-        setTimeout(function () {
-            fadeout(element, 0.8);
-        }, 1500);
+        element.style.filter = `alpha(opacity=${0.8 * 100})`;
+
+        startFadeoutAnimation(element);
     }
 
     const isVideoSpedUp = (video) => video.playbackRate !== 1;
