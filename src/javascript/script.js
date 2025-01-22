@@ -2,13 +2,6 @@
 
     "use strict";
 
-    // Key values for keyboard events
-    // https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
-    const KEYS = {
-        BACKTICK: "`", // Also called backquote or grave accent
-        QUOTE: "'" // Also called apostrophe
-    };
-
     let activeAnimationId = null; // Store the current animation ID
 
     // https://developer.mozilla.org/en-US/docs/Web/API/Element/keyup_event
@@ -93,9 +86,13 @@
 
     const isVideoSpedUp = (video) => video.playbackRate !== 1;
 
+    // Key values for keyboard events
+    // https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
     // ` or ' is for toggling between speedup and normal speed
     const isToggleSpeedShortcut = (e) =>
-        e.key === KEYS.BACKTICK || e.key === KEYS.QUOTE;
+        e.key === "`" || // Backtick/Grave Accent key
+        e.key === "'" || // Quote/Apostrophe key
+        e.keyCode === 192; // 192 is the keyCode for ` which is needed for backwards compatibility with the original implementation
 
     // ` or ' for toggling between speedup and normal speed
     const isOnlyToggleSpeedShortcut = (e) =>
