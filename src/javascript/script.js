@@ -3,12 +3,20 @@
     "use strict";
 
     let activeAnimationId = null; // Store the current animation ID
+    let lastKeyupTime = 0;        // Track the last key event time
+    const DEBOUNCE_DELAY = 100;   // Set debounce time in milliseconds
 
     // https://developer.mozilla.org/en-US/docs/Web/API/Element/keyup_event
     window.addEventListener("keyup", function (event) {
         // If an input/textarea element is active, don't go any further, or if it's not a speedup shortcut
         if (inputActive(document.activeElement) || !isToggleSpeedShortcut(event))
             return;
+
+        // If the time between key presses is less than the debounce delay, ignore the event
+        if (event.timeStamp - lastKeyupTime < DEBOUNCE_DELAY)
+            return;
+
+        lastKeyupTime = event.timeStamp;
 
         let video = document.getElementsByTagName("video")[0];
         if (!video)
@@ -92,6 +100,7 @@
     const isToggleSpeedShortcut = (e) =>
         e.key === "`" || // Backtick/Grave Accent key
         e.key === "'" || // Quote/Apostrophe key
+        e.key === "@" || // @ symbol on most keyboard layouts
         // 192 is the keyCode for ` on a US keyboard layout, but it's not the same for
         // all keyboard layouts, for example:
         // - 192 is the keyCode for ' on a UK keyboard layout
