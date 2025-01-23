@@ -92,28 +92,35 @@
     const isToggleSpeedShortcut = (e) =>
         e.key === "`" || // Backtick/Grave Accent key
         e.key === "'" || // Quote/Apostrophe key
-        e.keyCode === 192; // 192 is the keyCode for ` which is needed for backwards compatibility with the original implementation
+        // 192 is the keyCode for ` on a US keyboard layout, but it's not the same for
+        // all keyboard layouts, for example:
+        // - 192 is the keyCode for ' on a UK keyboard layout
+        // - 192 is the keyCode for @ on a Japanese and French keyboard layouts
+        // - 192 is the keyCode for ö on a German keyboard layout
+        // Hence the check for keyCode 192 is needed for backwards compatibility with
+        // the original implementation as people began to use these keys over time
+        e.keyCode === 192;
 
     // ` or ' for toggling between speedup and normal speed
     const isOnlyToggleSpeedShortcut = (e) =>
         isToggleSpeedShortcut(e)
-        && !e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey;
+        && !e.ctrlKey && !e.altKey && !e.metaKey;
 
     // Ctrl + ` or Ctrl + ' for 3x speed
     const is3xSpeedShortcut = (e) =>
         isToggleSpeedShortcut(e) && e.ctrlKey
-        && !e.shiftKey && !e.altKey && !e.metaKey;
+        && !e.altKey && !e.metaKey;
 
     // Windows + ` or Windows + ' for 4x speed (Windows key is the meta key on Windows)
     // Command + ` or Command + ' for 4x speed (Command key is the meta key on Mac)
     const is4xSpeedShortcut = (e) =>
         isToggleSpeedShortcut(e) && e.metaKey
-        && !e.ctrlKey && !e.shiftKey && !e.altKey;
+        && !e.ctrlKey && !e.altKey;
 
     // Alt + ` or Alt + ' for 5x speed (on Windows)
     // Option + ` or Option + ' for 5x speed (on Mac)
     const is5xSpeedShortcut = (e) =>
         isToggleSpeedShortcut(e) && e.altKey
-        && !e.ctrlKey && !e.shiftKey && !e.metaKey;
+        && !e.ctrlKey && !e.metaKey;
 
 }());
