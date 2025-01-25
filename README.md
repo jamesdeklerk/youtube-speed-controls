@@ -59,7 +59,7 @@ An inexhaustive list of suggested keys to try for toggling between normal (1x) a
 - Italian: ò
 - Dutch: ù or @ (i.e. Shift + 2)
 
-For higher speeds, use the appropriate modifier key along with the toggle key. For example:
+For higher speeds, use the appropriate modifier key (e.g. <code>Ctrl</code>, <code>Windows</code>, <code>Alt</code>, <code>Control</code>, <code>Command</code>, <code>Option</code>) along with the toggle key. For example:
 
 - 3x speed on Windows (US English): <code>Ctrl + &#96;</code>
 - 3x speed on Mac (US English): <code>Control + &#96;</code>
