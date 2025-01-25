@@ -100,7 +100,8 @@
     const isToggleSpeedShortcut = (e) =>
         e.key === "`" || // Backtick/Grave Accent key
         e.key === "'" || // Quote/Apostrophe key
-        e.key === "@" || // @ symbol on most keyboard layouts
+        e.key === '"' || // Quotation mark/Double quote key
+        e.key === "@" || // @ symbol key
         // 192 is the keyCode for ` on a US keyboard layout, but it's not the same for
         // all keyboard layouts, for example:
         // - 192 is the keyCode for ' on a UK keyboard layout
