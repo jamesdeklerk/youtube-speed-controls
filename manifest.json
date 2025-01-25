@@ -3,7 +3,7 @@
 
     "name": "YouTube Speed Controls",
     "description": "Click ` (backtick) to toggle between normal (1x) and 2x speed, or Ctrl + ` to play at 3x speed.",
-    "version": "2.3",
+    "version": "2.4",
 
     "content_scripts": [
         {
