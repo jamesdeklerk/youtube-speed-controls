@@ -23,8 +23,7 @@
             return;
 
         if (isOnlyToggleSpeedShortcut(event)) {
-            // If it's sped up, go back to normal speed, else go to 2x speed
-            video.playbackRate = isVideoSpedUp(video) ? 1 : 2;
+            video.playbackRate = getNextSpeed(video);
         } else if (is3xSpeedShortcut(event)) {
             video.playbackRate = 3;
         } else if (is4xSpeedShortcut(event)) {
@@ -92,7 +91,30 @@
         startFadeoutAnimation(element);
     }
 
-    const isVideoSpedUp = (video) => video.playbackRate !== 1;
+    /**
+     * Returns the next playback speed for a given video element based on a predefined set of speeds.
+     * If the current speed is not found or is the last in the list, it wraps around to the first speed.
+     *
+     * Logic:
+     * - Define an array of allowed playback speeds.
+     * - Find the current playback rate's index in the array.
+     * - If not found or at the end, return the first speed.
+     * - Otherwise, return the next speed in the array.
+     *
+     * @param {HTMLVideoElement} video - The video element whose playback speed is to be changed.
+     * @returns {number} The next playback speed value.
+     */
+    const getNextSpeed = (video) => {
+    const speedMap = [1, 1.25, 1.5, 1.75, 2];
+    const current = video.playbackRate;
+    const idx = speedMap.indexOf(current);
+
+    if (idx === -1 || idx === speedMap.length - 1) {
+        return speedMap[0];
+    }
+
+    return speedMap[idx + 1];
+    };
 
     // Key values for keyboard events
     // https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
