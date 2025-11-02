@@ -2,14 +2,16 @@
 
     "use strict";
 
-    let activeAnimationId = null; // Store the current animation ID
     let lastKeyupTime = 0;        // Track the last key event time
+    let pendingLayoutFrame = null; // Track pending reposition frame
+
     const DEBOUNCE_DELAY = 100;   // Set debounce time in milliseconds
+    const SPEED_INDICATOR_ELEMENT_ID = "youtube-extension-speed-indicator";
 
     // https://developer.mozilla.org/en-US/docs/Web/API/Element/keyup_event
-    window.addEventListener("keyup", function (event) {
+    const keyupHandler = (event) => {
         // If an input/textarea element is active, don't go any further, or if it's not a speedup shortcut
-        if (inputActive(document.activeElement) || !isToggleSpeedShortcut(event))
+        if (inputActive(document.activeElement) || !keyCheck_IsToggleSpeedShortcut(event))
             return;
 
         // If the time between key presses is less than the debounce delay, ignore the event
@@ -18,23 +20,89 @@
 
         lastKeyupTime = event.timeStamp;
 
-        let video = document.getElementsByTagName("video")[0];
-        if (!video)
+        let videoElements = document.querySelectorAll("video");
+        if (!videoElements.length)
             return;
 
-        if (isOnlyToggleSpeedShortcut(event)) {
-            // If it's sped up, go back to normal speed, else go to 2x speed
-            video.playbackRate = isVideoSpedUp(video) ? 1 : 2;
-        } else if (is3xSpeedShortcut(event)) {
-            video.playbackRate = 3;
-        } else if (is4xSpeedShortcut(event)) {
-            video.playbackRate = 4;
-        } else if (is5xSpeedShortcut(event)) {
-            video.playbackRate = 5;
-        }
+        // Loop through all video elements on the page, and set the speed of each one
+        videoElements.forEach(video => {
+            if (keyCheck_IsDefaultToggleSpeedShortcut(event)) {
+                // If it's sped up, go back to normal speed, else go to 2x speed
+                video.playbackRate = isVideoSpedUp(video) ? 1 : 2;
+            } else if (keyCheck_Is3xSpeedShortcut(event)) {
+                video.playbackRate = 3;
+            } else if (keyCheck_Is4xSpeedShortcut(event)) {
+                video.playbackRate = 4;
+            } else if (keyCheck_Is5xSpeedShortcut(event)) {
+                video.playbackRate = 5;
+            }
+        });
 
-        displayTextInMediaElement(video.playbackRate);
-    });
+        let firstVideoInViewport = getFirstVideoInViewport();
+        displaySpeedInYouTubeVideoElement(firstVideoInViewport);
+    }
+
+    const scheduleIndicatorReposition = () => {
+        if (pendingLayoutFrame)
+            return;
+
+        pendingLayoutFrame = requestAnimationFrame(() => {
+            pendingLayoutFrame = null;
+
+            // Reposition the speed indicator if it's visible
+            const speedIndicatorElement = document.getElementById(SPEED_INDICATOR_ELEMENT_ID);
+
+            if (!speedIndicatorElement || speedIndicatorElement.style.display === 'none')
+                return;
+
+            const firstVideoInViewport = getFirstVideoInViewport();
+            if (!firstVideoInViewport) {
+                speedIndicatorElement.style.display = 'none';
+                return;
+            }
+
+            positionSpeedIndicator(firstVideoInViewport, speedIndicatorElement);
+        });
+    };
+
+    // Intersection Observer - watch video elements entering/leaving viewport
+    const setupIntersectionObserver = () => {
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.01 // Trigger when at least 1% of the video is visible
+        };
+
+        const intersectionObserver = new IntersectionObserver((entries) => {
+            // Schedule reposition when any video's visibility changes
+            scheduleIndicatorReposition();
+        }, observerOptions);
+
+        // Observe all video elements on the page
+        document.querySelectorAll('video').forEach(video => {
+            intersectionObserver.observe(video);
+        });
+    };
+
+    // Mutation Observer - watch for video element changes (movement, sizing, etc.)
+    const setupMutationObserver = () => {
+        const mutationObserverOptions = {
+            attributes: true,                       // Watch for attribute changes (style, class, etc.)
+            attributeFilter: [
+                'style', 'class', 'width', 'height' // Only watch these attributes
+            ],
+            subtree: true,                          // Watch all descendants
+            childList: true                         // Watch for added/removed elements
+        };
+
+        const mutationObserver = new MutationObserver(() => {
+            // Schedule reposition when the DOM changes
+            scheduleIndicatorReposition();
+        });
+
+        // Start observing the document body for mutations
+        mutationObserver.observe(document.body, mutationObserverOptions);
+    };
 
     const inputActive = (currentElement) =>
         // If on an input or textarea
@@ -42,54 +110,87 @@
         currentElement.tagName.toLowerCase() === "textarea" ||
         currentElement.isContentEditable;
 
-    function startFadeoutAnimation(element, startOpacity = 0.9, duration = 1000) {
-        let opacity = startOpacity;
-        const startTime = performance.now();
+    function startPulseAnimation(element) {
+        const existing = element.getAnimations().pop();
+        if (existing) existing.cancel();
 
-        // If an animation is already in progress, cancel it
-        if (activeAnimationId) {
-            cancelAnimationFrame(activeAnimationId);
-        }
+        element.style.display = 'inline-flex';
 
-        const fadeStep = function (timestamp) {
-            const elapsed = timestamp - startTime;
-            const progress = Math.min(elapsed / duration, 1); // Ensure progress does not exceed 1
+        const animation = element.animate([
+            // Pop in (ease-out)
+            { transform: 'scale(0.8)', opacity: 0.2, offset: 0, easing: 'cubic-bezier(0.2, 0.8, 0.4, 1)' },
+            { transform: 'scale(1.0)', opacity: 1.0, offset: 0.22 },
 
-            // Set the opacity based on the progress
-            opacity = startOpacity * (1 - progress);
-            element.style.opacity = opacity;
-            element.style.filter = `alpha(opacity=${opacity * 100})`;
+            // Hold
+            { transform: 'scale(1.0)', opacity: 1.0, offset: 0.78 },
 
-            if (progress < 1) {
-                activeAnimationId = requestAnimationFrame(fadeStep);
-            } else {
-                element.style.display = 'none';
-                activeAnimationId = null; // Clear the animation ID when done
-            }
-        };
+            // Pop out (ease-in)
+            { transform: 'scale(0.8)', opacity: 0.2, offset: 1, easing: 'cubic-bezier(0.4, 0, 0.6, 0.2)' },
+        ], {
+            duration: 900,
+            fill: 'forwards'
+        });
 
-        activeAnimationId = requestAnimationFrame(fadeStep);
+        animation.onfinish = () => (element.style.display = 'none');
     }
 
-    function displayTextInMediaElement(speed) {
-        let elementId = "youtube-extension-text-box";
-        let element = document.getElementById(elementId);
+    function displaySpeedInYouTubeVideoElement(videoElement) {
+        if (!videoElement)
+            return;
 
-        // If the element doesn't exist, append it to the body
-        // must check if it already exists
-        if (!element) {
-            let mediaElement = document.getElementById("movie_player");
-            mediaElement.insertAdjacentHTML('afterbegin', `<div id="${elementId}">${speed}x</div>`);
-            element = document.getElementById(elementId);
-        } else {
-            element.innerHTML = speed + "x";
+        const speed = videoElement.playbackRate;
+        const speedIndicatorElement = getOrCreateSpeedIndicatorElement();
+
+        if (!positionSpeedIndicator(videoElement, speedIndicatorElement))
+            return;
+
+        speedIndicatorElement.textContent = `${speed}x`;
+
+        startPulseAnimation(speedIndicatorElement);
+    }
+
+    function getOrCreateSpeedIndicatorElement() {
+        let speedIndicatorElement = document.getElementById(SPEED_INDICATOR_ELEMENT_ID);
+
+        if (!speedIndicatorElement) {
+            speedIndicatorElement = document.createElement('div');
+            speedIndicatorElement.id = SPEED_INDICATOR_ELEMENT_ID;
+            speedIndicatorElement.setAttribute('aria-hidden', 'true');
+            speedIndicatorElement.setAttribute('role', 'presentation');
+            document.body.appendChild(speedIndicatorElement);
         }
 
-        element.style.display = 'block';
-        element.style.opacity = 0.8;
-        element.style.filter = `alpha(opacity=${0.8 * 100})`;
+        return speedIndicatorElement;
+    }
 
-        startFadeoutAnimation(element);
+    function positionSpeedIndicator(videoElement, speedIndicatorElement) {
+        if (!videoElement || !speedIndicatorElement)
+            return false;
+
+        const videoRect = videoElement.getBoundingClientRect();
+
+        if (!videoRect.width || !videoRect.height)
+            return false;
+
+        speedIndicatorElement.style.left = `${videoRect.left + (videoRect.width / 2)}px`;
+        speedIndicatorElement.style.top = `${videoRect.top + (videoRect.height / 2)}px`;
+
+        return true;
+    }
+
+    // Get the first video element in the viewport - generally the one being watched
+    const getFirstVideoInViewport = () => 
+        [...document.querySelectorAll('video')].find(isInViewport);
+
+    // Check if an element is in the viewport
+    const isInViewport = (element) => {
+        const rect = element.getBoundingClientRect();
+        return (
+            rect.top < window.innerHeight &&
+            rect.bottom > 0 &&
+            rect.left < window.innerWidth &&
+            rect.right > 0
+        );
     }
 
     const isVideoSpedUp = (video) => video.playbackRate !== 1;
@@ -97,7 +198,7 @@
     // Key values for keyboard events
     // https://developer.mozilla.org/en-US/docs/Web/API/UI_Events/Keyboard_event_key_values
     // ` or ' is for toggling between speedup and normal speed
-    const isToggleSpeedShortcut = (e) =>
+    const keyCheck_IsToggleSpeedShortcut = (e) =>
         e.key === "`" || // Backtick/Grave Accent key
         e.key === "'" || // Quote/Apostrophe key
         e.key === '"' || // Quotation mark/Double quote key
@@ -111,26 +212,36 @@
         // the original implementation as people began to use these keys over time
         e.keyCode === 192;
 
-    // ` or ' for toggling between speedup and normal speed
-    const isOnlyToggleSpeedShortcut = (e) =>
-        isToggleSpeedShortcut(e)
+    // Check it is only the toggle speed shortcut without any modifier keys
+    // e.g. ` or ' for toggling between speedup and normal speed
+    const keyCheck_IsDefaultToggleSpeedShortcut = (e) =>
+        keyCheck_IsToggleSpeedShortcut(e)
         && !e.ctrlKey && !e.altKey && !e.metaKey;
 
     // Ctrl + ` or Ctrl + ' for 3x speed
-    const is3xSpeedShortcut = (e) =>
-        isToggleSpeedShortcut(e) && e.ctrlKey
+    const keyCheck_Is3xSpeedShortcut = (e) =>
+        keyCheck_IsToggleSpeedShortcut(e) && e.ctrlKey
         && !e.altKey && !e.metaKey;
 
     // Windows + ` or Windows + ' for 4x speed (Windows key is the meta key on Windows)
     // Command + ` or Command + ' for 4x speed (Command key is the meta key on Mac)
-    const is4xSpeedShortcut = (e) =>
-        isToggleSpeedShortcut(e) && e.metaKey
+    const keyCheck_Is4xSpeedShortcut = (e) =>
+        keyCheck_IsToggleSpeedShortcut(e) && e.metaKey
         && !e.ctrlKey && !e.altKey;
 
     // Alt + ` or Alt + ' for 5x speed (on Windows)
     // Option + ` or Option + ' for 5x speed (on Mac)
-    const is5xSpeedShortcut = (e) =>
-        isToggleSpeedShortcut(e) && e.altKey
+    const keyCheck_Is5xSpeedShortcut = (e) =>
+        keyCheck_IsToggleSpeedShortcut(e) && e.altKey
         && !e.ctrlKey && !e.metaKey;
 
+
+    // Set up observers to reposition the speed indicator
+    // when video elements change - movement, sizing, entering/leaving viewport
+    setupIntersectionObserver();
+    setupMutationObserver();
+
+    // Set up event listeners
+    document.addEventListener('fullscreenchange', scheduleIndicatorReposition);
+    document.addEventListener('keyup', keyupHandler); // The code main entry point (keyup events)
 }());
